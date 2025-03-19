@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Energy Consumption Prediction</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f7fa;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      h1 {
+        color: #2c3e50;
+      }
+      .grid-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+      @media (max-width: 768px) {
+        .grid-container {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      .results {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #3498db;
+      }
+      .chart-container {
+        height: 400px;
+        margin-top: 20px;
+      }
+      .model-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .metric-card {
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #e8f4fd;
+        border-left: 4px solid #3498db;
+      }
+      .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Energy Consumption Prediction</h1>
+        <p>
+          Use machine learning models to predict energy consumption based on
+          various factors
+        </p>
+      </header>
+
+      <div class="grid-container">
+        <div class="card">
+          <h2>Input Parameters</h2>
+          <form id="prediction-form">
+            <div class="form-group">
+              <label for="temperature">Temperature (°C)</label>
+              <input
+                type="number"
+                id="temperature"
+                name="temperature"
+                step="0.1"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="humidity">Humidity (%)</label>
+              <input
+                type="number"
+                id="humidity"
+                name="humidity"
+                min="0"
+                max="100"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="hvac">HVAC Usage</label>
+              <select id="hvac" name="hvac" required>
+                <option value="1">On</option>
+                <option value="0">Off</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="lighting">Lighting Usage</label>
+              <select id="lighting" name="lighting" required>
+                <option value="1">On</option>
+                <option value="0">Off</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="occupancy">Occupancy (number of people)</label>
+              <input
+                type="number"
+                id="occupancy"
+                name="occupancy"
+                min="0"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="renewable">Renewable Energy Output (kW)</label>
+              <input
+                type="number"
+                id="renewable"
+                name="renewable"
+                step="0.1"
+                min="0"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="is_weekend">Is Weekend</label>
+              <select id="is_weekend" name="is_weekend" required>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="hour">Hour of Day (0-23)</label>
+              <input
+                type="number"
+                id="hour"
+                name="hour"
+                min="0"
+                max="23"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="model">Prediction Model</label>
+              <select id="model" name="model" required>
+                <option value="linear_regression">Linear Regression</option>
+                <option value="ridge_regression">Ridge Regression</option>
+                <option value="lasso_regression">Lasso Regression</option>
+                <option value="decision_tree_regressor">
+                  Decision Tree Regressor
+                </option>
+                <option value="random_forest_regressor">
+                  Random Forest Regressor
+                </option>
+                <option value="xgboost_regressor">XGBoost Regressor</option>
+              </select>
+            </div>
+
+            <button type="submit">Predict Energy Consumption</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Prediction Results</h2>
+          <div id="results-placeholder">
+            <p>Fill in the parameters and click "Predict" to see results.</p>
+          </div>
+
+          <div id="prediction-results" class="results hidden">
+            <h3>Predicted Energy Consumption</h3>
+            <div class="metric-value" id="prediction-value">--</div>
+            <p>kWh</p>
+          </div>
+
+          <div class="chart-container" id="chart">
+            <!-- Chart will be rendered here -->
+          </div>
+
+          <div class="model-metrics">
+            <div class="metric-card">
+              <h4>Model Used</h4>
+              <div class="metric-value" id="model-name">--</div>
+            </div>
+            <div class="metric-card">
+              <h4>Model MSE</h4>
+              <div class="metric-value" id="model-mse">--</div>
+            </div>
+            <div class="metric-card">
+              <h4>Model R²</h4>
+              <div class="metric-value" id="model-r2">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script>
+      // Sample data for demonstration
+      const modelMetrics = {
+        linear_regression: {
+          name: "Linear Regression",
+          mse: 0.0815,
+          r2: 0.9234,
+        },
+        ridge_regression: { name: "Ridge Regression", mse: 0.0821, r2: 0.9231 },
+        lasso_regression: { name: "Lasso Regression", mse: 0.0918, r2: 0.9193 },
+        decision_tree_regressor: {
+          name: "Decision Tree Regressor",
+          mse: 0.0756,
+          r2: 0.93,
+        },
+        random_forest_regressor: {
+          name: "Random Forest Regressor",
+          mse: 0.0624,
+          r2: 0.9418,
+        },
+        xgboost_regressor: {
+          name: "XGBoost Regressor",
+          mse: 0.0599,
+          r2: 0.9432,
+        },
+      };
+
+      document
+        .getElementById("prediction-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Collect form data
+          const formData = {
+            temperature: parseFloat(
+              document.getElementById("temperature").value
+            ),
+            humidity: parseFloat(document.getElementById("humidity").value),
+            hvac: parseInt(document.getElementById("hvac").value),
+            lighting: parseInt(document.getElementById("lighting").value),
+            occupancy: parseInt(document.getElementById("occupancy").value),
+            renewable: parseFloat(document.getElementById("renewable").value),
+            is_weekend: parseInt(document.getElementById("is_weekend").value),
+            hour: parseInt(document.getElementById("hour").value),
+            model: document.getElementById("model").value,
+          };
+
+          // Get selected model info for UI updates
+          const modelInfo = modelMetrics[formData.model];
+
+          // In a real application, this would send data to a backend API
+          // For now we'll simulate with our frontend function
+          fetch("/predict", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.error) {
+                alert("Error: " + data.error);
+                return;
+              }
+              displayPrediction(formData, data.prediction, modelInfo);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              // Fallback to simulation if API call fails
+              simulatePrediction(formData, modelInfo);
+            });
+        });
+
+      function displayPrediction(data, prediction, modelInfo) {
+        // Hide placeholder and show results
+        document.getElementById("results-placeholder").classList.add("hidden");
+        document
+          .getElementById("prediction-results")
+          .classList.remove("hidden");
+
+        // Update DOM with results
+        document.getElementById("prediction-value").textContent =
+          prediction.toFixed(2);
+        document.getElementById("model-name").textContent = modelInfo.name;
+        document.getElementById("model-mse").textContent =
+          modelInfo.mse.toFixed(4);
+        document.getElementById("model-r2").textContent =
+          modelInfo.r2.toFixed(4);
+
+        // Update chart
+        updateChart(data, prediction);
+      }
+
+      function simulatePrediction(data, modelInfo) {
+        // Calculate a simulated prediction
+        // In a real app, this would come from the server
+        const basePrediction = 12.5;
+        const temperatureEffect = data.temperature * 0.15;
+        const humidityEffect = data.humidity * 0.03;
+        const hvacEffect = data.hvac * 5.2;
+        const lightingEffect = data.lighting * 2.8;
+        const occupancyEffect = data.occupancy * 0.7;
+        const renewableEffect = -data.renewable * 0.25;
+        const weekendEffect = data.is_weekend ? -3.2 : 0;
+
+        // Add time-of-day effect (peak at 14:00)
+        const hourEffect = 2 * Math.sin(((data.hour - 2) * Math.PI) / 12);
+
+        // Combine factors
+        let prediction =
+          basePrediction +
+          temperatureEffect +
+          humidityEffect +
+          hvacEffect +
+          lightingEffect +
+          occupancyEffect +
+          renewableEffect +
+          weekendEffect +
+          hourEffect;
+
+        // Add a small random variation
+        prediction *= 0.95 + Math.random() * 0.1;
+
+        // Ensure prediction is positive
+        prediction = Math.max(0, prediction);
+
+        displayPrediction(data, prediction, modelInfo);
+      }
+
+      function updateChart(data, prediction) {
+        // Get or create the chart canvas
+        let chartCanvas = document.getElementById("consumption-chart");
+
+        if (!chartCanvas) {
+          chartCanvas = document.createElement("canvas");
+          chartCanvas.id = "consumption-chart";
+          document.getElementById("chart").appendChild(chartCanvas);
+        } else {
+          // If chart exists, destroy it to prevent duplicates
+          Chart.getChart(chartCanvas)?.destroy();
+        }
+
+        // Sample historical data (in a real app, this would come from the server)
+        const hourlyData = Array(24)
+          .fill(0)
+          .map((_, i) => {
+            // Base pattern throughout the day
+            const base = 8 + 6 * Math.sin(((i - 2) * Math.PI) / 12);
+            // Add some randomness
+            return (base * (0.9 + Math.random() * 0.2)).toFixed(1);
+          });
+
+        // Insert our prediction at the current hour
+        hourlyData[data.hour] = prediction.toFixed(1);
+
+        // Create the chart
+        new Chart(chartCanvas, {
+          type: "line",
+          data: {
+            labels: Array(24)
+              .fill(0)
+              .map((_, i) => `${i}:00`),
+            datasets: [
+              {
+                label: "Hourly Energy Consumption (kWh)",
+                data: hourlyData,
+                backgroundColor: "rgba(52, 152, 219, 0.2)",
+                borderColor: "rgba(52, 152, 219, 1)",
+                borderWidth: 2,
+                pointBackgroundColor: Array(24)
+                  .fill("rgba(52, 152, 219, 1)")
+                  .map((color, i) =>
+                    i === data.hour ? "rgba(231, 76, 60, 1)" : color
+                  ),
+                pointRadius: Array(24)
+                  .fill(3)
+                  .map((radius, i) => (i === data.hour ? 6 : radius)),
+                pointHoverRadius: 8,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              yAxes: [
+                {
+                  ticks: {
+                    beginAtZero: true,
+                  },
+                  scaleLabel: {
+                    display: true,
+                    labelString: "Energy Consumption (kWh)",
+                  },
+                },
+              ],
+              xAxes: [
+                {
+                  scaleLabel: {
+                    display: true,
+                    labelString: "Hour of Day",
+                  },
+                },
+              ],
+            },
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

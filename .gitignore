@@ -1,0 +1,5 @@
+myenv/
+*.dll
+*.pkl
+*.log
+__pycache__/
